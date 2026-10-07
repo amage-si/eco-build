@@ -48,11 +48,24 @@ demo's 122-word UI model and Ankra's loop state made every segment take
    `extern`), the spins they reach (static inline) and a share of the
    segments, by a hash of their def's name. Segment functions get hidden
    external linkage. Programs with GPU calls are built as one unit.
+   With stable names (the default for dev builds), an edit stays in the
+   units that hold the edited code. bend numbers segments across the
+   whole program (`def$k<count>`), spins in emission order and FIDs by
+   position, so adding one segment anywhere used to change every unit.
+   The splitter renames a def's continuation segments by their order
+   inside the def, names spins by a hash of their text (their locals
+   renumbered), and takes FID numbers out of the units: each unit declares
+   the FIDs it uses as link-time constants (`extern eco_FID_x`, numbers
+   given to the linker with `--defsym`, linked without PIE so they end up
+   as immediates), and `FID_T`, `wl_tab` and the static image live in a
+   small tables unit. Constructor ids, static offsets and match tables
+   are still positional: an edit that adds a constructor or changes
+   static data (a string) rebuilds more units.
 3. **Compile the units in parallel with a cache.** Objects are cached in
    `~/.cache/eco-build/objs` by the unit's text, the flags and the clang
-   version: an edit that leaves the def set alone recompiles only the
-   units whose text changed. At most `--mem-budget` MiB (default 1536) of
-   clang processes run at once, estimated from each unit's size.
+   version, so only the units whose text changed are compiled. At most
+   `--mem-budget` MiB (default 1536) of clang processes run at once,
+   estimated from each unit's size.
 4. **Link** (`-lpthread -lm`, plus X11/ALSA when the C includes them).
 
 Dev builds use `-O1`; `--release` builds the unsplit C in one unit at
@@ -74,8 +87,9 @@ frames give the same output. `--flat-max 0` turns it off.
 
 ```
 eco build <target>... [--release] [--official|--fork] [-O N] [-j N]
-                      [--units N] [--mem-budget MiB] [--heap-cap MiB]
-                      [--flat-max N] [--root DIR] [--json FILE]
+                      [--units N] [--no-stable] [--mem-budget MiB]
+                      [--heap-cap MiB] [--flat-max N] [--root DIR]
+                      [--json FILE]
 eco test <target>...   same options; runs the binary with the target's
                        `run` arguments and prints its last lines
 eco targets
@@ -95,7 +109,56 @@ Measured on Ian's laptop (Ryzen 7 5800H, 8 cores / 16 threads, 32 GB),
 clang 22.1.8, bend 2.0.35 (Bun 1.4.0) and the fork on Bun 1.4.2; each
 row's load average is in `results/`. Wall times include bend's startup.
 
-(filled in by the measurement round)
+The AMAGE Eco demo (`Chromi/examples/eco/main.bend`), libraries at fixed
+commits (`.work/snap0`), one build per row:
+
+| Demo build | `bend main.bend -o eco` (before) | `eco`, official bend | `eco` (fork, default) |
+|---|---|---|---|
+| cold (empty cache) | 83.6 s, 4.6 GiB | 40.6 s, 1.32 GiB | **14.1 s, 1.21 GiB** |
+| no change | 83.6 s | 25.3 s | **9.4 s** |
+| one-line value edit (a Mokko theme color) | 83.6 s | 31.8 s | **11.8 s, 1.26 GiB** |
+| logic edit (a new Mokko def, called) | 83.6 s | 34.1 s | **10.9 s, 1.35 GiB** |
+| release (`--release`: one unit, -O3, official) | 83.6 s, 4.6 GiB | 92.9 s, 1.73 GiB | — |
+
+Every edit row recompiled one unit of 18. Without stable names (the
+first round, `--no-stable`) the logic edit recompiled all units: 38.9 s
+official, 15.6 s with the fork. Where the fork's time goes in an edit:
+bend → C 8–9 s, split 0.7 s, one unit 1.7–1.9 s, link 0.1 s.
+
+Test suites (`eco test`; cold cache, then again with no change):
+
+| Suite | `bend tests.bend -o tests` (before) | `eco`, official bend | `eco` (fork) |
+|---|---|---|---|
+| Runika (51 checks) | 6.6 s, 0.53 GiB | 3.3 s → 1.0 s | 2.9 s → 1.0 s |
+| Chromi (60 checks) | 3.8 s, 0.51 GiB | 3.3 s → 1.2 s | 3.4 s → 1.1 s |
+| Voltra (71 checks) | 4.2 s, 0.60 GiB | 3.3 s → 1.2 s | 3.2 s → 1.0 s |
+
+Small programs gain less: bend takes ~1 s on them and clang's largest
+unit ~2 s. Their C has no record wider than 32 words, so the fork emits
+the same C as bend for them and both columns share cached objects. Their
+peak rises from 0.5–0.6 GiB to 0.7–0.9 GiB, because the units compile in
+parallel (`--mem-budget` bounds it).
+
+Running the result (the demo's CPU reference renderer, `reference 900
+560`, five runs each; the frame is the same bytes in every build):
+
+| Build | paint | whole run (decode PNG/SVG/font + paint) |
+|---|---|---|
+| `--release` (official, one unit, -O3) | 71–76 ms | 312–333 ms |
+| fork with `BEND_FLAT_MAX=32`, one unit, -O3 | 70–73 ms | 220–242 ms |
+| dev default (fork, flat 32, stable units, -O1) | 91–102 ms | 246–266 ms |
+| dev with the official bend (-O1) | 90–96 ms | 327–344 ms |
+| dev at `-O 0` | ~6,000 ms | ~7,200 ms |
+
+`-O1` paints about 25% slower than `-O3`; `-O0` is unusable (the segments
+lose `preserve_none` and pass their 61–206 words through memory), so it
+is not the default. Boxing the wide records makes the whole run ~28%
+faster at the same optimization level, which matches the 30–35% the text
+session measured for the same width at runtime.
+
+Peaks are the whole process tree's RSS, sampled every 50 ms. Loads were
+3–6 (other sessions were working); raw rows in `results/round1.jsonl`
+and `results/round2.jsonl`.
 
 ## Layout
 

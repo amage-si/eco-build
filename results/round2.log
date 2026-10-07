@@ -1,0 +1,219 @@
+emptied ~/.cache/eco-build
+## build demo --root <eco>/build/tools/../.work/snap0
+eco: waited 75.8 s for the build lock
+eco build demo (dev -O1, fork, flat-max 32, load 3.79)
+  fork -> C       7.57 s  peak 1.21 GiB, 6.0 MB of C
+  split           0.66 s  18 units, stable names
+  clang           5.78 s  18 of 18 units compiled (-O1, up to 16 at once), peak 1.07 GiB
+  link            0.08 s  
+  total          14.14 s  peak 1.21 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap0
+eco: waited 49.1 s for the build lock
+eco build demo (dev -O1, fork, flat-max 32, load 3.77)
+  fork -> C       8.58 s  peak 1.24 GiB, 6.0 MB of C
+  split           0.74 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.06 GiB
+  link            0.09 s  
+  total           9.45 s  peak 1.24 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap1
+eco build demo (dev -O1, fork, flat-max 32, load 3.50)
+  fork -> C       9.06 s  peak 1.26 GiB, 6.0 MB of C
+  split           0.72 s  18 units, stable names
+  clang           1.86 s  1 of 18 units compiled (-O1, up to 16 at once), peak 0.20 GiB
+  link            0.09 s  
+  total          11.76 s  peak 1.26 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap2
+eco build demo (dev -O1, fork, flat-max 32, load 3.41)
+  fork -> C       8.44 s  peak 1.35 GiB, 6.0 MB of C
+  split           0.69 s  18 units, stable names
+  clang           1.65 s  1 of 18 units compiled (-O1, up to 16 at once), peak 0.20 GiB
+  link            0.11 s  
+  total          10.93 s  peak 1.35 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap0
+eco build demo (dev -O1, fork, flat-max 32, load 3.83)
+  fork -> C       8.10 s  peak 1.18 GiB, 6.0 MB of C
+  split           0.70 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.06 GiB
+  link            0.09 s  
+  total           8.93 s  peak 1.18 GiB -> Chromi/build/eco
+emptied ~/.cache/eco-build
+## build demo --root <eco>/build/tools/../.work/snap0 --official
+eco build demo (dev -O1, official bend, load 4.29)
+  bend -> C      25.23 s  peak 1.29 GiB, 7.9 MB of C
+  split           0.99 s  18 units, stable names
+  clang          14.23 s  18 of 18 units compiled (-O1, up to 16 at once), peak 1.33 GiB
+  link            0.09 s  
+  total          40.58 s  peak 1.33 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap0 --official
+eco: waited 6.7 s for the build lock
+eco build demo (dev -O1, official bend, load 5.56)
+  bend -> C      24.29 s  peak 1.34 GiB, 7.9 MB of C
+  split           0.86 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.07 GiB
+  link            0.11 s  
+  total          25.32 s  peak 1.34 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap1 --official
+eco: waited 22.7 s for the build lock
+eco build demo (dev -O1, official bend, load 3.88)
+  bend -> C      23.86 s  peak 1.34 GiB, 7.9 MB of C
+  split           0.81 s  18 units, stable names
+  clang           7.00 s  1 of 18 units compiled (-O1, up to 16 at once), peak 0.27 GiB
+  link            0.10 s  
+  total          31.82 s  peak 1.34 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap2 --official
+eco: waited 0.7 s for the build lock
+eco build demo (dev -O1, official bend, load 5.50)
+  bend -> C      25.78 s  peak 2.17 GiB, 7.9 MB of C
+  split           0.93 s  18 units, stable names
+  clang           7.24 s  1 of 18 units compiled (-O1, up to 16 at once), peak 0.27 GiB
+  link            0.08 s  
+  total          34.08 s  peak 2.17 GiB -> Chromi/build/eco
+## build demo --root <eco>/build/tools/../.work/snap0 --official
+eco: waited 4.3 s for the build lock
+eco build demo (dev -O1, official bend, load 5.95)
+  bend -> C      22.30 s  peak 1.33 GiB, 7.9 MB of C
+  split           0.84 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.07 GiB
+  link            0.08 s  
+  total          23.26 s  peak 1.33 GiB -> Chromi/build/eco
+emptied ~/.cache/eco-build
+## test runika-tests --root <eco>/build/tools/../.work/snap0
+eco: waited 1.8 s for the build lock
+eco build runika-tests (dev -O1, fork, flat-max 32, load 4.83)
+  fork -> C       0.84 s  peak 0.17 GiB, 1.2 MB of C
+  split           0.15 s  18 units, stable names
+  clang           2.03 s  18 of 18 units compiled (-O1, up to 16 at once), peak 0.91 GiB
+  link            0.05 s  
+  total           3.11 s  peak 0.91 GiB -> Runika/build/tests
+  | PASS non-BMP format4 unsupported
+  | PASS surrogate scalar rejected
+  | Runika tests complete
+  run exit 0 in 0.05 s
+## test runika-tests --root <eco>/build/tools/../.work/snap0
+eco: waited 2.1 s for the build lock
+eco build runika-tests (dev -O1, fork, flat-max 32, load 4.76)
+  fork -> C       1.20 s  peak 0.17 GiB, 1.2 MB of C
+  split           0.14 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.07 s  
+  total           1.45 s  peak 0.17 GiB -> Runika/build/tests
+  | PASS non-BMP format4 unsupported
+  | PASS surrogate scalar rejected
+  | Runika tests complete
+  run exit 0 in 0.06 s
+## test chromi-tests --root <eco>/build/tools/../.work/snap0
+eco build chromi-tests (dev -O1, fork, flat-max 32, load 4.70)
+  fork -> C       1.32 s  peak 0.24 GiB, 0.9 MB of C
+  split           0.13 s  16 units, stable names
+  clang           2.28 s  16 of 16 units compiled (-O1, up to 16 at once), peak 0.80 GiB
+  link            0.05 s  
+  total           3.81 s  peak 0.80 GiB -> Chromi/build/tests
+  | PASS draw list: pixels validated once draw like the validating blits
+  | PASS draw list: pixels are validated when made
+  | 60 checks passed; this is runtime testing, not a proof of the complete system
+  run exit 0 in 0.00 s
+## test chromi-tests --root <eco>/build/tools/../.work/snap0
+eco: waited 2.0 s for the build lock
+eco build chromi-tests (dev -O1, fork, flat-max 32, load 4.64)
+  fork -> C       1.09 s  peak 0.23 GiB, 0.9 MB of C
+  split           0.12 s  16 units, stable names
+  clang           0.00 s  0 of 16 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.05 s  
+  total           1.28 s  peak 0.23 GiB -> Chromi/build/tests
+  | PASS draw list: pixels validated once draw like the validating blits
+  | PASS draw list: pixels are validated when made
+  | 60 checks passed; this is runtime testing, not a proof of the complete system
+  run exit 0 in 0.00 s
+## test voltra-tests --root <eco>/build/tools/../.work/snap0
+eco build voltra-tests (dev -O1, fork, flat-max 32, load 4.64)
+  fork -> C       0.91 s  peak 0.22 GiB, 0.8 MB of C
+  split           0.09 s  18 units, stable names
+  clang           2.13 s  18 of 18 units compiled (-O1, up to 16 at once), peak 0.83 GiB
+  link            0.05 s  
+  total           3.20 s  peak 0.83 GiB -> Voltra/build/tests
+  | PASS pipeline: description has the bridge's exact length
+  | PASS texture: 0xRRGGBBAA words read through an A,B,G,R swizzle
+  | 71 Voltra checks passed (Bend-side logic; the GPU path is checked by gpu_tests.bend and the examples)
+  run exit 0 in 0.00 s
+## test voltra-tests --root <eco>/build/tools/../.work/snap0
+eco: waited 19.5 s for the build lock
+eco build voltra-tests (dev -O1, fork, flat-max 32, load 4.40)
+  fork -> C       0.87 s  peak 0.22 GiB, 0.8 MB of C
+  split           0.09 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.05 s  
+  total           1.03 s  peak 0.22 GiB -> Voltra/build/tests
+  | PASS pipeline: description has the bridge's exact length
+  | PASS texture: 0xRRGGBBAA words read through an A,B,G,R swizzle
+  | 71 Voltra checks passed (Bend-side logic; the GPU path is checked by gpu_tests.bend and the examples)
+  run exit 0 in 0.00 s
+emptied ~/.cache/eco-build
+## test runika-tests --root <eco>/build/tools/../.work/snap0 --official
+eco: waited 21.5 s for the build lock
+eco build runika-tests (dev -O1, official bend, load 3.96)
+  bend -> C       0.92 s  peak 0.18 GiB, 1.2 MB of C
+  split           0.14 s  18 units, stable names
+  clang           1.88 s  18 of 18 units compiled (-O1, up to 16 at once), peak 0.89 GiB
+  link            0.05 s  
+  total           3.02 s  peak 0.89 GiB -> Runika/build/tests
+  | PASS non-BMP format4 unsupported
+  | PASS surrogate scalar rejected
+  | Runika tests complete
+  run exit 0 in 0.05 s
+## test runika-tests --root <eco>/build/tools/../.work/snap0 --official
+eco: waited 19.2 s for the build lock
+eco build runika-tests (dev -O1, official bend, load 4.26)
+  bend -> C       0.85 s  peak 0.19 GiB, 1.2 MB of C
+  split           0.14 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.05 s  
+  total           1.06 s  peak 0.19 GiB -> Runika/build/tests
+  | PASS non-BMP format4 unsupported
+  | PASS surrogate scalar rejected
+  | Runika tests complete
+  run exit 0 in 0.05 s
+## test chromi-tests --root <eco>/build/tools/../.work/snap0 --official
+eco build chromi-tests (dev -O1, official bend, load 4.26)
+  bend -> C       1.02 s  peak 0.23 GiB, 0.9 MB of C
+  split           0.12 s  16 units, stable names
+  clang           2.23 s  16 of 16 units compiled (-O1, up to 16 at once), peak 0.81 GiB
+  link            0.05 s  
+  total           3.44 s  peak 0.81 GiB -> Chromi/build/tests
+  | PASS draw list: pixels validated once draw like the validating blits
+  | PASS draw list: pixels are validated when made
+  | 60 checks passed; this is runtime testing, not a proof of the complete system
+  run exit 0 in 0.00 s
+## test chromi-tests --root <eco>/build/tools/../.work/snap0 --official
+eco build chromi-tests (dev -O1, official bend, load 4.72)
+  bend -> C       1.03 s  peak 0.24 GiB, 0.9 MB of C
+  split           0.12 s  16 units, stable names
+  clang           0.00 s  0 of 16 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.05 s  
+  total           1.22 s  peak 0.24 GiB -> Chromi/build/tests
+  | PASS draw list: pixels validated once draw like the validating blits
+  | PASS draw list: pixels are validated when made
+  | 60 checks passed; this is runtime testing, not a proof of the complete system
+  run exit 0 in 0.00 s
+## test voltra-tests --root <eco>/build/tools/../.work/snap0 --official
+eco build voltra-tests (dev -O1, official bend, load 4.72)
+  bend -> C       1.07 s  peak 0.25 GiB, 0.8 MB of C
+  split           0.09 s  18 units, stable names
+  clang           2.75 s  18 of 18 units compiled (-O1, up to 16 at once), peak 0.82 GiB
+  link            0.07 s  
+  total           4.00 s  peak 0.82 GiB -> Voltra/build/tests
+  | PASS pipeline: description has the bridge's exact length
+  | PASS texture: 0xRRGGBBAA words read through an A,B,G,R swizzle
+  | 71 Voltra checks passed (Bend-side logic; the GPU path is checked by gpu_tests.bend and the examples)
+  run exit 0 in 0.00 s
+## test voltra-tests --root <eco>/build/tools/../.work/snap0 --official
+eco build voltra-tests (dev -O1, official bend, load 4.83)
+  bend -> C       1.23 s  peak 0.22 GiB, 0.8 MB of C
+  split           0.08 s  18 units, stable names
+  clang           0.00 s  0 of 18 units compiled (-O1, up to 16 at once), peak 0.03 GiB
+  link            0.05 s  
+  total           1.38 s  peak 0.22 GiB -> Voltra/build/tests
+  | PASS pipeline: description has the bridge's exact length
+  | PASS texture: 0xRRGGBBAA words read through an A,B,G,R swizzle
+  | 71 Voltra checks passed (Bend-side logic; the GPU path is checked by gpu_tests.bend and the examples)
+  run exit 0 in 0.00 s
+round exit 0

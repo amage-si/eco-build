@@ -119,7 +119,7 @@ def _segments(region):
 def _def_of(seg_name):
     """The def a segment belongs to: its name without the counter suffix
     the compiler appends to continuation and join segments."""
-    return re.sub(r"_[A-Z]\d+$", "", seg_name)
+    return re.sub(r"_[A-Za-z]\d+$", "", seg_name)
 
 
 def _unit_of(seg_name, units):
@@ -203,6 +203,8 @@ def split(c_text, units):
     out = [head_def + spin_pre + img.group(0) + "\n\n" + work + pre + "\n"
            + trailer + "\n" + tail]
     for g in groups[1:]:
+        if not g:
+            continue
         body = "\n\n".join(g)
         need, todo = set(), set(SPIN_REF.findall(body)) & spins.keys()
         while todo:
@@ -274,14 +276,17 @@ LOCAL = re.compile(r"\b_([a-z][a-z0-9]*)_(\d+)\b")
 def _canon_locals(body):
     """Renumber a function's locals (_v_26, _o_6...) by first appearance:
     a spin takes them from the def that emitted it first."""
-    seen = {}
+    seen, count = {}, {}
 
     def sub(m):
         key = m.group(0)
-        if key not in seen:
+        new = seen.get(key)
+        if new is None:
             base = m.group(1)
-            seen[key] = f"_{base}_{sum(1 for k in seen if k.startswith('_' + base + '_'))}"
-        return seen[key]
+            n = count.get(base, 0)
+            count[base] = n + 1
+            new = seen[key] = f"_{base}_{n}"
+        return new
     return LOCAL.sub(sub, body)
 
 
@@ -428,6 +433,8 @@ def split_stable(c_text, units):
               + HIDDEN + " " + img.group(0).replace("CONSTV ", "const ", 1) + "\n")
     out = [unit0, tables]
     for g in groups[1:]:
+        if not g:
+            continue
         body = "\n\n".join(g)
         need, todo = set(), set(SPIN_ANY.findall(body)) & spins.keys()
         while todo:

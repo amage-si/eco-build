@@ -173,6 +173,8 @@ def clang_units(units, args, work, rep, sampler, pie=True):
     for i, u in enumerate(units):
         key = hashlib.blake2b((ident + u).encode(), digest_size=16).hexdigest()
         obj = os.path.join(objs_dir, key + ".o")
+        if obj in objs:
+            raise SystemExit(f"eco: two units have the same text (unit {i})")
         objs.append(obj)
         if not os.path.exists(obj):
             src = os.path.join(work, f"u{i}.c")
@@ -204,10 +206,31 @@ def clang_units(units, args, work, rep, sampler, pie=True):
             os.replace(tmp, obj)
     if failed:
         raise SystemExit("eco: clang failed on " + ", ".join(failed))
+    for obj in objs:
+        os.utime(obj)
+    prune(objs_dir, args.cache_cap * 2**20)
     rep.add("clang", time.time() - s,
             f"{len(todo)} of {len(units)} units compiled (-O{args.opt}, "
             f"up to {args.jobs} at once), peak {sampler.phase() / 2**30:.2f} GiB")
     return objs
+
+
+def prune(objs_dir, cap):
+    """Keep the most recently used objects up to cap bytes."""
+    entries = []
+    for name in os.listdir(objs_dir):
+        path = os.path.join(objs_dir, name)
+        try:
+            st = os.stat(path)
+        except OSError:
+            continue
+        entries.append((st.st_mtime, st.st_size, path))
+    entries.sort(reverse=True)
+    total = 0
+    for _, size, path in entries:
+        total += size
+        if total > cap:
+            os.remove(path)
 
 
 def link(objs, libs, out, rep, sampler, fids=None, work=None):
@@ -247,11 +270,14 @@ def build(t, args, sampler):
     units, fids = None, None
     if not args.release:
         s = time.time()
+        # about one unit per 150 KB of C, 4 to 16: more units compile in
+        # parallel, each repeats the head
+        n = args.units or max(4, min(16, round(len(text) / 150e3)))
         if args.stable:
-            got = csplit.split_stable(text, args.units)
+            got = csplit.split_stable(text, n)
             units, fids = got if got is not None else (None, None)
         else:
-            units = csplit.split(text, args.units)
+            units = csplit.split(text, n)
         if units is None:
             print("  (GPU calls: built as one unit)")
         else:
@@ -307,12 +333,15 @@ def main(argv=None):
                        help="clang -O level for dev builds (default 1)")
         b.add_argument("-j", dest="jobs", type=int, default=os.cpu_count(),
                        help="most clang processes at once")
-        b.add_argument("--units", type=int, default=16,
-                       help="segment units to split into (default 16)")
+        b.add_argument("--units", type=int, default=0,
+                       help="segment units to split into (default: one per"
+                            " 150 KB of C, 4 to 16)")
         b.add_argument("--no-stable", dest="stable", action="store_false",
                        help="split without stable names (PIE, positional FIDs)")
         b.add_argument("--mem-budget", type=int, default=1536,
                        help="MiB the parallel clangs may use together (default 1536)")
+        b.add_argument("--cache-cap", type=int, default=2048,
+                       help="MiB of compiled units to keep (default 2048)")
         b.add_argument("--heap-cap", type=int, default=2400,
                        help="MiB of RAM bend's JS heap sizes itself for (0: off)")
         b.add_argument("--root", default=os.path.dirname(HERE),

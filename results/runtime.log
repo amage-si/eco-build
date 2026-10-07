@@ -1,0 +1,5 @@
+release: paint ms 73 73 74 71 76; whole run ms 333 313 312 322 332; frame 7d1698e57270ce8f; binary 1622624 bytes
+dev: paint ms 91 93 102 98 95; whole run ms 254 246 264 266 254; frame 7d1698e57270ce8f; binary 1880976 bytes
+dev-O0: paint ms 5976 6416 6004 6108 5789; whole run ms 7181 7581 7228 7293 6970; frame 7d1698e57270ce8f; binary 7572264 bytes
+dev-official: paint ms 90 96 91 93 95; whole run ms 327 331 327 330 344; frame 7d1698e57270ce8f; binary 1975352 bytes
+runtime exit 0
