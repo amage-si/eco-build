@@ -144,9 +144,11 @@ def compile_c(t, args, work, rep, sampler):
     if args.heap_cap:
         env.setdefault("BUN_JSC_forceRAMSize", str(args.heap_cap * 2**20))
     if args.fork:
-        main = os.path.join(args.root, "bend-fork", "src", "bend2", "main.ts")
+        main = os.path.join(args.fork_dir, "bend2", "main.ts")
         cmd = ["bun", main, t["src"], "-o", c_path]
         who = "fork"
+        if args.flat_max and not args.release:
+            env["BEND_FLAT_MAX"] = str(args.flat_max)
     else:
         cmd = ["bend", t["src"], "-o", c_path]
         who = "bend"
@@ -161,10 +163,11 @@ def compile_c(t, args, work, rep, sampler):
     return c_path, text
 
 
-def clang_units(units, args, work, rep, sampler):
+def clang_units(units, args, work, rep, sampler, pie=True):
     objs_dir = os.path.join(cache_dir(), "objs")
     os.makedirs(objs_dir, exist_ok=True)
-    flags = ["-std=c11", f"-O{args.opt}", "-Wno-unused-function"]
+    flags = ["-std=c11", f"-O{args.opt}", "-Wno-unused-function",
+             *([] if pie else ["-fno-pie"])]
     ident = clang_id() + "\0" + " ".join(flags) + "\0"
     todo, objs = [], []
     for i, u in enumerate(units):
@@ -207,10 +210,18 @@ def clang_units(units, args, work, rep, sampler):
     return objs
 
 
-def link(objs, libs, out, rep, sampler):
+def link(objs, libs, out, rep, sampler, fids=None, work=None):
     s = time.time()
     tmp = out + ".eco-tmp"
-    p = subprocess.run(["clang", "-o", tmp, *objs, "-lpthread", "-lm", *libs])
+    extra = []
+    if fids is not None:
+        # the FID numbers, as absolute symbols the units use as immediates
+        rsp = os.path.join(work, "fids.rsp")
+        with open(rsp, "w") as f:
+            f.writelines(f"-Wl,--defsym=eco_{k}={v}\n" for k, v in fids.items())
+        extra = ["-no-pie", "@" + rsp]
+    p = subprocess.run(["clang", "-o", tmp, *extra, *objs, "-lpthread", "-lm",
+                        *libs])
     if p.returncode != 0:
         raise SystemExit("eco: link failed")
     os.replace(tmp, out)
@@ -220,8 +231,12 @@ def link(objs, libs, out, rep, sampler):
 def build(t, args, sampler):
     rep = Report(t["name"])
     mode = "release" if args.release else f"dev -O{args.opt}"
-    print(f"eco build {t['name']} ({mode}, {'fork' if args.fork else 'bend'})",
-          flush=True)
+    who = "official bend"
+    if args.fork:
+        who = "fork" + (f", flat-max {args.flat_max}"
+                        if args.flat_max and not args.release else "")
+    load = open("/proc/loadavg").read().split()[0]
+    print(f"eco build {t['name']} ({mode}, {who}, load {load})", flush=True)
     work = os.path.join(cache_dir(), "work", t["name"])
     os.makedirs(work, exist_ok=True)
     out = os.path.join(t["dir"], t["out"])
@@ -229,14 +244,19 @@ def build(t, args, sampler):
     sampler.phase()
     c_path, text = compile_c(t, args, work, rep, sampler)
     libs = link_libs(text)
-    units = None
+    units, fids = None, None
     if not args.release:
         s = time.time()
-        units = csplit.split(text, args.units)
+        if args.stable:
+            got = csplit.split_stable(text, args.units)
+            units, fids = got if got is not None else (None, None)
+        else:
+            units = csplit.split(text, args.units)
         if units is None:
             print("  (GPU calls: built as one unit)")
         else:
-            rep.add("split", time.time() - s, f"{len(units)} units")
+            rep.add("split", time.time() - s, f"{len(units)} units"
+                    + (", stable names" if args.stable else ""))
     if units is None:
         s = time.time()
         tmp = out + ".eco-tmp"
@@ -248,12 +268,15 @@ def build(t, args, sampler):
         rep.add("clang -O3", time.time() - s,
                 f"one unit, peak {sampler.phase() / 2**30:.2f} GiB")
     else:
-        objs = clang_units(units, args, work, rep, sampler)
-        link(objs, libs, out, rep, sampler)
+        objs = clang_units(units, args, work, rep, sampler,
+                           pie=fids is None)
+        link(objs, libs, out, rep, sampler, fids, work)
     total = time.time() - rep.t0
     print(f"  {'total':<12} {total:7.2f} s  peak {sampler.peak / 2**30:.2f} GiB"
           f" -> {os.path.relpath(out, args.root)}", flush=True)
     return {"target": t["name"], "mode": mode, "fork": args.fork,
+            "flat_max": args.flat_max if args.fork and not args.release else 0,
+            "units": args.units, "load": float(load),
             "total_s": round(total, 2), "peak_mib": sampler.peak >> 20,
             "phases": [(w, round(s, 2), n) for w, s, n in rep.rows]}
 
@@ -269,14 +292,25 @@ def main(argv=None):
         b.add_argument("targets", nargs="+")
         b.add_argument("--release", action="store_true",
                        help="one unit at -O3, as bend builds it")
+        b.add_argument("--official", action="store_true",
+                       help="use the installed bend even if the fork is present")
         b.add_argument("--fork", action="store_true",
-                       help="use the local compiler fork (bend-fork/)")
+                       help="use the local compiler fork (the default for dev"
+                            " builds when it is present; see --fork-dir)")
+        b.add_argument("--flat-max", type=int, default=32,
+                       help="fork dev builds box datatypes wider than this"
+                            " many words (BEND_FLAT_MAX; 0: as bend does)")
+        b.add_argument("--fork-dir", default=os.path.join(
+                           os.path.dirname(HERE), "bend-fork", "src"),
+                       help="checkout of the fork (default ../bend-fork/src)")
         b.add_argument("-O", dest="opt", default="1",
                        help="clang -O level for dev builds (default 1)")
         b.add_argument("-j", dest="jobs", type=int, default=os.cpu_count(),
                        help="most clang processes at once")
         b.add_argument("--units", type=int, default=16,
                        help="segment units to split into (default 16)")
+        b.add_argument("--no-stable", dest="stable", action="store_false",
+                       help="split without stable names (PIE, positional FIDs)")
         b.add_argument("--mem-budget", type=int, default=1536,
                        help="MiB the parallel clangs may use together (default 1536)")
         b.add_argument("--heap-cap", type=int, default=2400,
@@ -308,6 +342,13 @@ def main(argv=None):
         return
 
     args.root = os.path.abspath(args.root)
+    fork_main = os.path.join(args.fork_dir, "bend2", "main.ts")
+    if args.official:
+        args.fork = False
+    elif not args.release and os.path.exists(fork_main):
+        args.fork = True
+    if args.fork and not os.path.exists(fork_main):
+        raise SystemExit(f"eco: no fork at {fork_main}")
     targets = load_targets(args.root)
     for name in args.targets:
         if name not in targets:
