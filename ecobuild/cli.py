@@ -39,6 +39,22 @@ import tomllib
 from . import csplit
 
 LOCK = "/tmp/amage-eco-bend-build.lock"
+# held while a session measures a running program; heavy parallel work
+# would disturb it
+BENCH_LOCK = "/tmp/amage-eco-bench.lock"
+
+
+def bench_busy():
+    """True while another process holds the bench lock."""
+    try:
+        with open(BENCH_LOCK, "a") as f:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(f, fcntl.LOCK_UN)
+        return False
+    except BlockingIOError:
+        return True
+    except OSError:
+        return False
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE = os.sysconf("SC_PAGE_SIZE")
 
@@ -182,6 +198,11 @@ def clang_units(units, args, work, rep, sampler, pie=True):
                 f.write(u)
             todo.append((len(u), i, src, obj))
     todo.sort(reverse=True)
+    jobs = args.jobs
+    if len(todo) > 1 and bench_busy():
+        print("  (the bench lock is held: compiling one unit at a time)",
+              flush=True)
+        jobs = 1
     s = time.time()
     # Start a unit only while the estimated memory of the running ones fits
     # the budget (one always runs). The estimate grows with the unit's text.
@@ -190,7 +211,7 @@ def clang_units(units, args, work, rep, sampler, pie=True):
     running, failed = {}, []
     queue = list(todo)
     while queue or running:
-        while queue and len(running) < args.jobs and (not running or sum(
+        while queue and len(running) < jobs and (not running or sum(
                 e for _, e, _ in running.values()) + est(queue[0][0]) <= budget):
             n, i, src, obj = queue.pop(0)
             tmp = obj + f".{os.getpid()}.tmp"
@@ -211,7 +232,7 @@ def clang_units(units, args, work, rep, sampler, pie=True):
     prune(objs_dir, args.cache_cap * 2**20)
     rep.add("clang", time.time() - s,
             f"{len(todo)} of {len(units)} units compiled (-O{args.opt}, "
-            f"up to {args.jobs} at once), peak {sampler.phase() / 2**30:.2f} GiB")
+            f"up to {jobs} at once), peak {sampler.phase() / 2**30:.2f} GiB")
     return objs
 
 

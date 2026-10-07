@@ -100,7 +100,10 @@ eco cache [--clean]
 
 Every build takes the shared Eco build lock
 (`/tmp/amage-eco-bend-build.lock`) and runs at `nice 10`; a wait for the
-lock is printed apart from the build's own time.
+lock is printed apart from the build's own time. While another session
+holds the bench lock (`/tmp/amage-eco-bench.lock`, taken while a running
+program is measured), eco compiles one unit at a time instead of in
+parallel, so its load does not spoil the measurement.
 
 `--root` builds a copy of the libraries (e.g. a snapshot) instead of the
 working trees beside this repo.
