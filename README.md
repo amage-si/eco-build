@@ -169,7 +169,7 @@ with the official build's output (`tools/refs.sh`). Identical at the
 measured commits, and again at the libraries' HEADs of 2026-10-07 00:17
 (Chromi 95d6274, Runika 131874b, Syllo 51b948a, Voltra c8baef5; by then
 58, 74 and 76 checks plus 20 and 13 GPU checks), with the default dev
-build, with `--official`, and with the plain split.
+build and with `--official`.
 
 Peaks are the whole process tree's RSS, sampled every 50 ms. Loads were
 3–6 (other sessions were working); raw rows in `results/round1.jsonl`
