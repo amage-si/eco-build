@@ -1,0 +1,55 @@
+# Build targets: `eco build <name>`. Paths are relative to the Eco root
+# (the directory holding this repo and the libraries). `run` is how
+# `eco test` runs the binary, from `dir`.
+
+[demo]
+dir = "Chromi"
+src = "examples/eco/main.bend"
+out = "build/eco"
+
+[reference]
+dir = "Chromi"
+src = "examples/eco/reference.bend"
+out = "build/reference"
+run = ["900", "560", "--threads", "2", "--gpu", "off"]
+
+[grid]
+dir = "Chromi"
+src = "examples/eco/grid.bend"
+out = "build/grid"
+
+[runika-tests]
+dir = "Runika"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[chromi-tests]
+dir = "Chromi"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[chromi-gpu-tests]
+dir = "Chromi"
+src = "gpu_tests.bend"
+out = "build/gpu_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[voltra-tests]
+dir = "Voltra"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[voltra-gpu-tests]
+dir = "Voltra"
+src = "gpu_tests.bend"
+out = "build/gpu_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[mokko-tests]
+dir = "Mokko"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
