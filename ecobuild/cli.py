@@ -1,22 +1,24 @@
 """eco: fast builds of AMAGE Eco programs.
 
-    eco build <target>... [--release] [--fork] [-O N] [-j N]
+    eco build <target>... [--release] [--official|--fork] [-O N] [-j N]
     eco test <target>...          build, run, show the output's last lines
     eco targets                   list the targets in targets.toml
     eco cache [--clean]           size of the object cache, or empty it
 
 A build runs under the shared Eco build lock at nice 10:
 
-  1. bend <src> -o <work>/out.c       check and emit C (the official
-                                      compiler, or the local fork with
-                                      --fork); the JS heap is capped with
-                                      BUN_JSC_forceRAMSize so bend's peak
-                                      stays near 1.3 GiB instead of 3+
-  2. split the C into units           see csplit.py; skipped by --release
-  3. clang -c each unit, in parallel  objects are cached by the unit's
-                                      text, flags and clang version, so
-                                      an edit recompiles only the units
-                                      whose text changed
+  1. bend <src> -o <work>/out.c       check and emit C: the local fork
+                                      (../bend-fork/src) when present for
+                                      dev builds, else the installed bend;
+                                      BUN_JSC_forceRAMSize keeps bend's
+                                      peak near 1.3 GiB instead of 3+
+  2. split the C into units           stable names (csplit.split_stable);
+                                      skipped by --release
+  3. clang -c each unit, in parallel  -O3 by default; objects are cached
+                                      by the unit's text, flags and clang
+                                      version, so an edit recompiles only
+                                      the units whose text changed; one at
+                                      a time while the bench lock is held
   4. link
 
 --release builds the unsplit C with bend's own clang line (-std=c11 -O3
@@ -55,6 +57,8 @@ def bench_busy():
         return True
     except OSError:
         return False
+
+
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE = os.sysconf("SC_PAGE_SIZE")
 
