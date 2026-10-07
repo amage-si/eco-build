@@ -130,11 +130,11 @@ column ran at a lower load (2) than the -O1 rounds (3.5–5.5).
 
 Test suites (`eco test`; cold cache, then again with no change):
 
-| Suite | `bend tests.bend -o tests` (before) | `eco`, official bend | `eco` (fork) |
+| Suite | `bend tests.bend -o tests` (before) | `eco`, official bend, -O1 | `eco` (fork), -O3 (default) |
 |---|---|---|---|
-| Runika (51 checks) | 6.6 s, 0.53 GiB | 3.3 s → 1.0 s | 2.9 s → 1.0 s |
-| Chromi (60 checks) | 3.8 s, 0.51 GiB | 3.3 s → 1.2 s | 3.4 s → 1.1 s |
-| Voltra (71 checks) | 4.2 s, 0.60 GiB | 3.3 s → 1.2 s | 3.2 s → 1.0 s |
+| Runika (51 checks) | 6.6 s, 0.53 GiB | 3.3 s → 1.0 s | 2.9 s → 0.9 s |
+| Chromi (60 checks) | 3.8 s, 0.51 GiB | 3.3 s → 1.2 s | 3.2 s → 1.1 s |
+| Voltra (71 checks) | 4.2 s, 0.60 GiB | 3.3 s → 1.2 s | 3.1 s → 1.0 s |
 
 Small programs gain less: bend takes ~1 s on them and clang's largest
 unit ~2 s. Their C has no record wider than 32 words, so the fork emits
