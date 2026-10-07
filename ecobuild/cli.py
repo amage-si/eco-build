@@ -329,8 +329,8 @@ def main(argv=None):
         b.add_argument("--fork-dir", default=os.path.join(
                            os.path.dirname(HERE), "bend-fork", "src"),
                        help="checkout of the fork (default ../bend-fork/src)")
-        b.add_argument("-O", dest="opt", default="1",
-                       help="clang -O level for dev builds (default 1)")
+        b.add_argument("-O", dest="opt", default="3",
+                       help="clang -O level for dev builds (default 3)")
         b.add_argument("-j", dest="jobs", type=int, default=os.cpu_count(),
                        help="most clang processes at once")
         b.add_argument("--units", type=int, default=0,

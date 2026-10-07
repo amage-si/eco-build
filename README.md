@@ -1,8 +1,9 @@
 # eco-build
 
 Fast builds of [AMAGE Eco](https://github.com/amage-si) programs (our UI
-toolkit in Bend 2): one command per target, a few seconds per edit instead
-of a minute and a half, and a memory peak near 1.2 GiB instead of 4–5 GiB.
+toolkit in Bend 2): one command per target, about 10 s per edit of the
+demo instead of 84 s, and a memory peak near 1.2–1.4 GiB instead of
+4.6 GiB, with a binary as fast as the release build.
 
 ```sh
 ./eco build demo            # dev build of Chromi/examples/eco/main.bend
@@ -15,8 +16,6 @@ of a minute and a half, and a memory peak near 1.2 GiB instead of 4–5 GiB.
 library directory, a source and an output, so `./eco build demo` writes
 `Chromi/build/eco`, the path the Chromi README runs.
 
-**Numbers:** see [Results](#results) (filled from `results/`).
-
 ## Where the time and the memory went
 
 Bend 2.0.35 builds a native program in three steps, all inside one
@@ -24,7 +23,7 @@ Bend 2.0.35 builds a native program in three steps, all inside one
 
 | Step | AMAGE Eco demo | What it is |
 |---|---|---|
-| parse, imports, check | ~1.7 s, 0.7 GiB | `book_read`: fast |
+| parse, imports, check | ~1 s, 0.4 GiB | `book_read`: fast |
 | emit C | ~19 s, grows to 3+ GiB | `compile_book` in `comp.ts`: the whole program re-emitted until a fixpoint, 8 passes |
 | clang | ~61 s, 1.5 GiB | one 7.9 MB C file, one unit, `-O3`, one core; while bend's 3 GiB heap stays resident |
 
@@ -39,8 +38,9 @@ demo's 122-word UI model and Ankra's loop state made every segment take
 1. **Emit C apart from clang.** `bend src -o out.c` exits before clang
    starts, so bend's heap is gone when clang runs. bend runs with
    `BUN_JSC_forceRAMSize` (default 2.4 GiB of "RAM" for JavaScriptCore's
-   heap sizing): the same C, the peak drops from ~3 GiB to ~1.2 GiB, about
-   2 s slower with the official binary.
+   heap sizing): the same C, the peak drops from ~3 GiB to ~1.2–1.3 GiB,
+   about 2 s slower with the official binary. It steers the collector; it
+   is not a hard limit (one official build of the demo peaked at 2.2 GiB).
 2. **Split the C into units** (`ecobuild/csplit.py`). On the host every
    segment is already its own function, entered by `musttail`; unit 0
    gets the runtime (its globals defined once), the static image, the
@@ -68,8 +68,10 @@ demo's 122-word UI model and Ankra's loop state made every segment take
    estimated from each unit's size.
 4. **Link** (`-lpthread -lm`, plus X11/ALSA when the C includes them).
 
-Dev builds use `-O1`; `--release` builds the unsplit C in one unit at
-`-O3`, bend's own command line, so it matches `bend src -o out`.
+Dev builds compile the units at `-O3` (`-O 1` saves ~0.3 s per edit and
+paints ~25% slower; `-O 0` is unusable, see below). `--release` builds the
+unsplit C in one unit at `-O3`, bend's own command line, so it matches
+`bend src -o out`.
 
 ### The compiler fork
 
@@ -112,18 +114,19 @@ row's load average is in `results/`. Wall times include bend's startup.
 The AMAGE Eco demo (`Chromi/examples/eco/main.bend`), libraries at fixed
 commits (`.work/snap0`), one build per row:
 
-| Demo build | `bend main.bend -o eco` (before) | `eco`, official bend | `eco` (fork, default) |
-|---|---|---|---|
-| cold (empty cache) | 83.6 s, 4.6 GiB | 40.6 s, 1.32 GiB | **14.1 s, 1.21 GiB** |
-| no change | 83.6 s | 25.3 s | **9.4 s** |
-| one-line value edit (a Mokko theme color) | 83.6 s | 31.8 s | **11.8 s, 1.26 GiB** |
-| logic edit (a new Mokko def, called) | 83.6 s | 34.1 s | **10.9 s, 1.35 GiB** |
-| release (`--release`: one unit, -O3, official) | 83.6 s, 4.6 GiB | 92.9 s, 1.73 GiB | — |
+| Demo build | `bend main.bend -o eco` (before) | `eco`, official bend, -O1 | `eco` (fork), -O1 | `eco` (fork), -O3 (default) |
+|---|---|---|---|---|
+| cold (empty cache) | 83.6 s, 4.6 GiB | 40.6 s, 1.32 GiB | 14.1 s, 1.21 GiB | **14.6 s, 1.23 GiB** |
+| no change | 83.6 s | 25.3 s | 9.4 s | — |
+| one-line value edit (a Mokko theme color) | 83.6 s | 31.8 s | 11.8 s, 1.26 GiB | **10.6 s, 1.12 GiB** |
+| logic edit (a new Mokko def, called) | 83.6 s | 34.1 s | 10.9 s, 1.35 GiB | **10.4 s, 1.26 GiB** |
+| release (`--release`: one unit, -O3, official) | 83.6 s, 4.6 GiB | 92.9 s, 1.73 GiB | — | — |
 
 Every edit row recompiled one unit of 18. Without stable names (the
 first round, `--no-stable`) the logic edit recompiled all units: 38.9 s
 official, 15.6 s with the fork. Where the fork's time goes in an edit:
-bend → C 8–9 s, split 0.7 s, one unit 1.7–1.9 s, link 0.1 s.
+bend → C 7.5–9 s, split 0.6 s, one unit 1.7–2.1 s, link 0.1 s. The -O3
+column ran at a lower load (2) than the -O1 rounds (3.5–5.5).
 
 Test suites (`eco test`; cold cache, then again with no change):
 
@@ -146,13 +149,14 @@ Running the result (the demo's CPU reference renderer, `reference 900
 |---|---|---|
 | `--release` (official, one unit, -O3) | 71–76 ms | 312–333 ms |
 | fork with `BEND_FLAT_MAX=32`, one unit, -O3 | 70–73 ms | 220–242 ms |
-| dev default (fork, flat 32, stable units, -O1) | 91–102 ms | 246–266 ms |
+| dev default (fork, flat 32, stable units, -O3) | 71–75 ms | 236–247 ms |
+| dev at `-O 1` (fork, flat 32) | 91–102 ms | 246–266 ms |
 | dev with the official bend (-O1) | 90–96 ms | 327–344 ms |
 | dev at `-O 0` | ~6,000 ms | ~7,200 ms |
 
-`-O1` paints about 25% slower than `-O3`; `-O0` is unusable (the segments
-lose `preserve_none` and pass their 61–206 words through memory), so it
-is not the default. Boxing the wide records makes the whole run ~28%
+Split units at `-O3` run as fast as the single-unit release; `-O1`
+paints about 25% slower; `-O0` is unusable (the segments lose
+`preserve_none` and pass their 61–206 words through memory). Boxing the wide records makes the whole run ~28%
 faster at the same optimization level, which matches the 30–35% the text
 session measured for the same width at runtime.
 
@@ -167,9 +171,12 @@ eco                 the command
 ecobuild/cli.py     build driver: compiler, split, parallel cached clang, link
 ecobuild/csplit.py  the C splitter
 targets.toml        targets
-tools/              measurement helpers: treemon (process-tree RSS), par,
-                    cpuprof (Bun .cpuprofile summary), ctrace (clang
-                    -ftime-trace summary), corpus (fork against bend)
+tools/              measurement: treemon (process-tree RSS), locked.sh
+                    (under the build lock), par, cpuprof (Bun .cpuprofile
+                    summary), ctrace (clang -ftime-trace summary), corpus
+                    (fork against bend), validate.sh (suites and frames
+                    against the official build), round.sh, round2.sh,
+                    runtime.sh, jsc.sh, table.py, sanitize.py
 results/            raw measurements (JSON), paths shown as <eco>
 ```
 
