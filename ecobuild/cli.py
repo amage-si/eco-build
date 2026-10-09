@@ -7,9 +7,9 @@
 
 A build runs under the shared Eco build lock at nice 10:
 
-  1. bend <src> -o <work>/out.c       check and emit C: the local fork
-                                      (../bend-fork/src) when present for
-                                      dev builds, else the installed bend;
+  1. bend <src> -o <work>/out.c       check and emit C with the installed
+                                      (official) bend; --fork uses the local
+                                      fork (../bend-fork/src) instead;
                                       BUN_JSC_forceRAMSize keeps bend's
                                       peak near 1.3 GiB instead of 3+
   2. split the C into units           stable names (csplit.split_stable);
@@ -344,10 +344,10 @@ def main(argv=None):
         b.add_argument("--release", action="store_true",
                        help="one unit at -O3, as bend builds it")
         b.add_argument("--official", action="store_true",
-                       help="use the installed bend even if the fork is present")
+                       help="use the installed bend (the default)")
         b.add_argument("--fork", action="store_true",
-                       help="use the local compiler fork (the default for dev"
-                            " builds when it is present; see --fork-dir)")
+                       help="use the local compiler fork instead, a lab for"
+                            " upstream patches (see --fork-dir)")
         b.add_argument("--flat-max", type=int, default=32,
                        help="fork dev builds box datatypes wider than this"
                             " many words (BEND_FLAT_MAX; 0: as bend does)")
@@ -397,10 +397,10 @@ def main(argv=None):
 
     args.root = os.path.abspath(args.root)
     fork_main = os.path.join(args.fork_dir, "bend2", "main.ts")
-    if args.official:
+    # The official bend by default: every library must build with it. The
+    # fork is opt-in, a lab for upstream patches.
+    if args.official or args.release:
         args.fork = False
-    elif not args.release and os.path.exists(fork_main):
-        args.fork = True
     if args.fork and not os.path.exists(fork_main):
         raise SystemExit(f"eco: no fork at {fork_main}")
     targets = load_targets(args.root)

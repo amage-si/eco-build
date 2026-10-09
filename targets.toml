@@ -101,3 +101,45 @@ dir = "Mokko"
 src = "field_tests.bend"
 out = "build/field_tests"
 run = ["--threads", "2", "--gpu", "off"]
+
+[dithra-tests]
+dir = "Dithra"
+src = "all_tests.bend"
+out = "build/all-tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[tessra-tests]
+dir = "Tessra"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[ocula-tests]
+dir = "Ocula"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[splina-tests]
+dir = "Splina"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[auvia-tests]
+dir = "Auvia"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[mokko-demo-tests]
+dir = "Mokko"
+src = "demo_tests.bend"
+out = "build/demo_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[chromi-text-tests]
+dir = "Chromi"
+src = "examples/eco/text_tests.bend"
+out = "build/text_tests"
+run = ["--threads", "2", "--gpu", "off"]

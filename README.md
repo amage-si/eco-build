@@ -1,12 +1,16 @@
 # eco-build
 
 Fast builds of [AMAGE Eco](https://github.com/amage-si) programs (our UI
-toolkit in Bend 2): one command per target, about 10 s per edit of the
-demo instead of 84 s, and a memory peak near 1.2–1.4 GiB instead of
-4.6 GiB, with a binary as fast as the release build.
+toolkit in Bend 2): one command per target, with the official `bend`.
+A demo build takes about 40 s instead of 84 s, almost all of it bend's
+C emission (38 s). The units are compiled in parallel and cached, so the
+memory peak stays under 2 GiB instead of 4.6 GiB, and the binary is as
+fast as the release build. The upstream patches in review
+(bendlang/bend#1386, #1387) cut the C emission about 2.5x; the opt-in
+fork (`--fork`, below) previews them at about 15 s.
 
 ```sh
-./eco build demo            # dev build of Chromi/examples/eco/main.bend
+./eco build demo            # dev build of Chromi/examples/eco/main.bend (official bend)
 ./eco test chromi-tests     # build and run a suite
 ./eco build demo --release  # what `bend main.bend -o eco` produces
 ./eco targets               # the targets in targets.toml
@@ -75,9 +79,11 @@ unsplit C in one unit at `-O3`, bend's own command line, so it matches
 
 ### The compiler fork
 
-When `../bend-fork/src` exists (a local fork of bendlang/bend v2.0.35, not
-published), dev builds use it through `bun bend2/main.ts`; `--official`
-forces the installed `bend`. In its default mode the fork emits the same C
+Every build uses the installed, official `bend` by default: the libraries
+must build with it, and improvements to the compiler go upstream as pull
+requests. `--fork` uses a local fork of bendlang/bend v2.0.35 instead
+(`../bend-fork/src`, not published), through `bun bend2/main.ts`, as a lab
+for those patches; no library may depend on it. In its default mode the fork emits the same C
 as the official 2.0.35, byte for byte (checked on every runnable upstream
 test and on the Eco programs; see `bend-fork/UPSTREAM.md`), three times
 faster. Dev builds also set `BEND_FLAT_MAX=32`, which boxes datatypes wider
@@ -144,6 +150,13 @@ unit ~2 s. Their C has no record wider than 32 words, so the fork emits
 the same C as bend for them and both columns share cached objects. Their
 peak rises from 0.5–0.6 GiB to 0.7–0.9 GiB, because the units compile in
 parallel (`--mem-budget` bounds it).
+
+On 2026-10-09 the default became the official bend. With the libraries at
+AMAGE Eco 0.1.0 the reference frames (900x560, 640x760) were the same bytes
+from both compilers. The whole reference run took a median of 144 ms official
+against 143 ms with the fork (7 interleaved runs each): the libraries now box
+their wide records themselves, so the fork's boxing no longer changes the
+runtime. The table below is from 2026-10-07, before that.
 
 Running the result (the demo's CPU reference renderer, `reference 900
 560`, five runs each; the frame is the same bytes in every build):
