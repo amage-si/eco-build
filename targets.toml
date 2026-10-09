@@ -154,3 +154,9 @@ dir = "Kinera"
 src = "tests.bend"
 out = "build/tests"
 run = ["--threads", "2", "--gpu", "off"]
+
+[mokko-anim-tests]
+dir = "Mokko"
+src = "anim_tests.bend"
+out = "build/anim_tests"
+run = ["--threads", "2", "--gpu", "off"]
