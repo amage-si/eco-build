@@ -143,3 +143,9 @@ dir = "Chromi"
 src = "examples/eco/text_tests.bend"
 out = "build/text_tests"
 run = ["--threads", "2", "--gpu", "off"]
+
+[kinera-tests]
+dir = "Kinera"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
