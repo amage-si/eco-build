@@ -144,6 +144,11 @@ src = "examples/eco/text_tests.bend"
 out = "build/text_tests"
 run = ["--threads", "2", "--gpu", "off"]
 
+[voltra-motion]
+dir = "Voltra"
+src = "examples/motion.bend"
+out = "build/motion"
+
 [kinera-tests]
 dir = "Kinera"
 src = "tests.bend"
