@@ -53,3 +53,51 @@ dir = "Mokko"
 src = "tests.bend"
 out = "build/tests"
 run = ["--threads", "2", "--gpu", "off"]
+
+[ankra-tests]
+dir = "Ankra"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[kairo-tests]
+dir = "Kairo"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[kairo-edit-tests]
+dir = "Kairo"
+src = "edit_tests.bend"
+out = "build/edit_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[kairo-adapter-tests]
+dir = "Kairo"
+src = "adapter_tests.bend"
+out = "build/adapter_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[kairo-ankra-tests]
+dir = "Kairo"
+src = "ankra_tests.bend"
+out = "build/ankra_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[syllo-tests]
+dir = "Syllo"
+src = "tests.bend"
+out = "build/tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[syllo-caret-tests]
+dir = "Syllo"
+src = "caret_tests.bend"
+out = "build/caret_tests"
+run = ["--threads", "2", "--gpu", "off"]
+
+[mokko-field-tests]
+dir = "Mokko"
+src = "field_tests.bend"
+out = "build/field_tests"
+run = ["--threads", "2", "--gpu", "off"]
