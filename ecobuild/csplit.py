@@ -39,7 +39,9 @@ GLOBALS = "// Globals\n// =======\n"
 TABLES = "// Tables\n// ======\n"
 
 SEG_START = re.compile(r"^  WL_CASE\((\w+)\)$")
-SPIN_DEF = re.compile(r"^(?:INLINE|FAR) Term (spin_\d+)\(", re.M)
+# DFAR (bend 2.0.37+, upstream #1413) is FAR on the host and INLINE on a
+# device: a long spin is a call, a short one stays inline.
+SPIN_DEF = re.compile(r"^(?:INLINE|FAR|DFAR) Term (spin_\d+)\(", re.M)
 SPIN_REF = re.compile(r"\b(spin_\d+)\(")
 STATIC_PROTO = re.compile(r"^static ((?:\w+\s+)+\**)(\w+)\(([^()]*)\);$", re.M)
 
