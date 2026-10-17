@@ -298,13 +298,20 @@ def build(t, args, sampler):
         # about one unit per 150 KB of C, 4 to 16: more units compile in
         # parallel, each repeats the head
         n = args.units or max(4, min(16, round(len(text) / 150e3)))
-        if args.stable:
-            got = csplit.split_stable(text, n)
-            units, fids = got if got is not None else (None, None)
-        else:
-            units = csplit.split(text, n)
+        why = "GPU calls"
+        try:
+            if args.stable:
+                got = csplit.split_stable(text, n)
+                units, fids = got if got is not None else (None, None)
+            else:
+                units = csplit.split(text, n)
+        except csplit.SplitError as e:
+            # A new bend may lay its C out in a way the splitter does not
+            # know yet; one unit is slower to compile but always works.
+            units, fids = None, None
+            why = f"C not split ({e})"
         if units is None:
-            print("  (GPU calls: built as one unit)")
+            print(f"  ({why}: built as one unit)")
         else:
             rep.add("split", time.time() - s, f"{len(units)} units"
                     + (", stable names" if args.stable else ""))
